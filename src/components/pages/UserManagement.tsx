@@ -9,18 +9,26 @@ import { memo, useCallback, useEffect, VFC } from "react";
 import { UserCard } from "../organisms/user/UserCard";
 import { useAllUsers } from "../../hooks/useAllUsers";
 import { UserDetailModal } from "../organisms/user/UserDetailModal";
+import { useSelectUser } from "../../hooks/useSelectUser";
 
 export const UserManagement: VFC = memo(() => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { getUsers, users, loading } = useAllUsers();
-
-  const onClickUser = useCallback(() => {
-    onOpen();
-  }, [onOpen]);
+  const { onSelectUser, selectedUser } = useSelectUser();
+  //console.log(selectedUser);
 
   useEffect(() => {
     getUsers();
   }, [getUsers]);
+
+  const onClickUser = useCallback(
+    (id: number) => {
+      //console.log(id);
+      onSelectUser({ id, users, onOpen });
+    },
+    [users, onSelectUser, onOpen]
+  );
+
   return (
     <>
       {loading ? (
@@ -32,6 +40,7 @@ export const UserManagement: VFC = memo(() => {
           {users.map((user) => (
             <WrapItem key={user.id} mx="auto">
               <UserCard
+                id={user.id}
                 imageUrl="https://source.unsplash.com/random"
                 userName={user.username}
                 fullName={user.name}
@@ -41,7 +50,11 @@ export const UserManagement: VFC = memo(() => {
           ))}
         </Wrap>
       )}
-      <UserDetailModal isOpen={isOpen} onClose={onClose}></UserDetailModal>
+      <UserDetailModal
+        user={selectedUser}
+        isOpen={isOpen}
+        onClose={onClose}
+      ></UserDetailModal>
     </>
   );
 });
